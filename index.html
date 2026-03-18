@@ -1410,7 +1410,7 @@ async function salvarEntrada(){
     document.getElementById('en-val').value='';
     document.getElementById('en-cu').value='';
     document.getElementById('en-forn').value='';
-    toast(`✅ ${qtd} ${ing.u} de ${ing.n} — CM: ${R(novEst[idx].cm)}/${ing.u}`,'g');
+    toast(`✅ ${qtd} ${ing.u} de ${ing.n} — CM: ${Rcu(novEst[idx].cm)}/${ing.u}`,'g');
     rdEntHist();
   }catch(e){toast('⚠️ Erro ao salvar','r');}
 }
@@ -1418,7 +1418,7 @@ window.salvarEntrada=salvarEntrada;
 
 function rdEntHist(){
   const all=st.estoque.flatMap((i,ii)=>(i.entradas||[]).map((e,ei)=>({...e,nome:i.n,u:i.u,ingIdx:e.ingIdx!==undefined?e.ingIdx:ii,entIdx:ei}))).sort((a,b)=>new Date(b.data)-new Date(a.data));
-  document.getElementById('en-hist').innerHTML=all.length===0?'<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:14px">Nenhuma entrada.</td></tr>':all.slice(0,50).map((e,ei)=>`<tr><td>${e.data}</td><td><b>${e.nome}</b></td><td class="r mono">${(e.qtd||0).toFixed(3)}</td><td>${e.u}</td><td class="r mono" style="color:var(--o)">${R(e.val||0)}</td><td class="r mono" style="color:var(--g2)">${R(e.cu||0)}/${e.u}</td><td style="color:var(--t3)">${e.forn||'—'}</td><td style="color:var(--t3)">${e.uname||'—'}</td><td><button style="background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.2);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600" onclick="pedirExclusaoEntrada(${e.ingIdx},${e.entIdx})">🗑</button></td></tr>`).join('');
+  document.getElementById('en-hist').innerHTML=all.length===0?'<tr><td colspan="8" style="text-align:center;color:var(--t3);padding:14px">Nenhuma entrada.</td></tr>':all.slice(0,50).map((e,ei)=>`<tr><td>${e.data}</td><td><b>${e.nome}</b></td><td class="r mono">${(e.qtd||0).toFixed(3)}</td><td>${e.u}</td><td class="r mono" style="color:var(--o)">${R(e.val||0)}</td><td class="r mono" style="color:var(--g2)">${Rcu(e.cu||0)}/${e.u}</td><td style="color:var(--t3)">${e.forn||'—'}</td><td style="color:var(--t3)">${e.uname||'—'}</td><td><button style="background:rgba(220,38,38,.1);color:#dc2626;border:1px solid rgba(220,38,38,.2);padding:3px 8px;border-radius:5px;cursor:pointer;font-size:11px;font-weight:600" onclick="pedirExclusaoEntrada(${e.ingIdx},${e.entIdx})">🗑</button></td></tr>`).join('');
 }
 
 // ══ RECEITAS ══
@@ -2515,6 +2515,15 @@ async function confirmarExclusaoEntrada(){
   }catch(e){ toast('⚠️ Erro: '+e.message,'r'); }
 }
 window.confirmarExclusaoEntrada = confirmarExclusaoEntrada;
+
+
+// Formatar custo unitário com casas decimais adequadas
+function Rcu(v){
+  if(!v||v===0) return 'R$ —';
+  if(v < 0.01) return 'R$ '+v.toFixed(4);
+  if(v < 0.1)  return 'R$ '+v.toFixed(3);
+  return 'R$ '+v.toFixed(2).replace('.',',');
+}
 
 updDate();
 setInterval(updDate,60000);
