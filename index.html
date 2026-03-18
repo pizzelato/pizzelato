@@ -400,6 +400,7 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
           <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--b1)"><span style="color:var(--t2)">Faturamento</span><span class="mono" id="r-fat" style="color:var(--o);font-weight:700">R$ 0,00</span></div>
           <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--b1)"><span style="color:var(--t2)">Custo real</span><span class="mono" id="r-custo" style="color:var(--r2)">R$ 0,00</span></div>
           <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--b1)"><span style="color:var(--t2)">Taxa app 8%</span><span class="mono" id="r-app" style="color:var(--t3)">R$ 0,00</span></div>
+            <div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b1)"><span style="color:var(--t2)">🛵 Entregador</span><span class="mono" id="r-entregador" style="color:var(--t3)">R$ 0,00</span></div>
           <div style="display:flex;justify-content:space-between;padding:4px 0;border-bottom:1px solid var(--b1)"><span style="color:var(--t2)">Marketing</span><span class="mono" id="r-mkt" style="color:var(--t3)">R$ 0,00</span></div>
           <div style="display:flex;justify-content:space-between;padding:9px 0 3px"><span style="font-weight:700;font-size:13px">Lucro Líquido</span><span class="mono" id="r-luc" style="color:var(--o);font-size:17px;font-weight:700">R$ 0,00</span></div>
           <div class="pbar"><div class="pfill" id="r-mbar" style="width:0%;background:var(--g2)"></div></div>
@@ -1041,9 +1042,13 @@ function custoRealProd(idx){
 function calcV(v){
   let fat=0,custo=0;
   PRODS.forEach((p,i)=>{ const q=v.qtds[i]||0; fat+=q*p.p; custo+=q*(v.custos?.[i]||custoRealProd(i)); });
-  const app=fat*.08,mkt=v.mkt||0,luc=fat-custo-app-mkt,marg=fat>0?luc/fat:0;
+  const app=fat*.08,mkt=v.mkt||0;
+  // Taxa do entregador: apenas para pedidos delivery (não balcão)
+  const isDelivery = !v.canal?.toLowerCase().includes('balcão');
+  const entregador = isDelivery ? (st.config?.entregador||5) : 0;
+  const luc=fat-custo-app-mkt-entregador,marg=fat>0?luc/fat:0;
   const ped=PRODS.reduce((s,_,i)=>s+(v.qtds[i]||0),0);
-  return {fat,custo,app,mkt,luc,marg,ped};
+  return {fat,custo,app,mkt,entregador,luc,marg,ped};
 }
 
 function vendasHoje(){ return st.vendas.filter(v=>v.data===today()); }
@@ -1276,8 +1281,13 @@ window.resetQtds=resetQtds;
 function calcRes(){
   let fat=0,custo=0;
   PRODS.forEach((p,i)=>{const q=parseInt(document.getElementById('q'+i)?.value)||0;fat+=q*p.p;custo+=q*custoRealProd(i);});
-  const app=fat*.08,mkt=parseFloat(document.getElementById('v-mkt').value)||0,luc=fat-custo-app-mkt,marg=fat>0?luc/fat:0;
+  const app=fat*.08,mkt=parseFloat(document.getElementById('v-mkt').value)||0;
+  const canal=document.getElementById('v-canal')?.value||'';
+  const isDelivery=!canal.toLowerCase().includes('balcão');
+  const entregador=isDelivery?(st.config?.entregador||5):0;
+  const luc=fat-custo-app-mkt-entregador,marg=fat>0?luc/fat:0;
   $('r-fat',R(fat));$('r-custo',R(custo));$('r-app',R(app));$('r-mkt',R(mkt));$('r-luc',R(luc));
+  const re=document.getElementById('r-entregador');if(re)re.textContent=isDelivery?R(entregador):'R$ 0 (Balcão)';
   document.getElementById('r-mbar').style.width=Math.max(0,Math.min(marg,.8)/.8*100)+'%';
   document.getElementById('r-mbar').style.background=marg>=.4?'var(--g2)':marg>=.3?'var(--y2)':'var(--r2)';
   $('r-marg-txt','Margem: '+Pct(marg));
