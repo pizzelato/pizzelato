@@ -249,6 +249,15 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
 ::-webkit-scrollbar{width:4px;height:4px}
 ::-webkit-scrollbar-thumb{background:var(--b2);border-radius:2px}
 </style>
+
+  <!-- PWA -->
+  <meta name="theme-color" content="#e8681a">
+  <meta name="apple-mobile-web-app-capable" content="yes">
+  <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
+  <meta name="apple-mobile-web-app-title" content="Pizzelato">
+  <meta name="mobile-web-app-capable" content="yes">
+  <link rel="manifest" href="manifest.json">
+  <link rel="apple-touch-icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍕</text></svg>">
 </head>
 <body>
 
@@ -1186,10 +1195,10 @@ const RECEITAS_BASE = [
 ];
 
 const PERMS = {
-  admin:    ["dashboard","vendas","produtos","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","usuarios","config"],
-  gerente:  ["dashboard","vendas","produtos","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","config"],
-  operador: ["dashboard","vendas","estoque","entradas","receitas","clientes","whatsapp"],
-  caixa:    ["dashboard","vendas"],
+  admin:    ["dashboard","vendas","produtos","fidelidade","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","usuarios","config"],
+  gerente:  ["dashboard","vendas","produtos","fidelidade","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","config"],
+  operador: ["dashboard","vendas","fidelidade","estoque","entradas","receitas","clientes","whatsapp"],
+  caixa:    ["dashboard","vendas","fidelidade"],
 };
 
 // ══ STATE ══
@@ -3216,6 +3225,108 @@ initFirebase();
     </div>
   </div>
 </div>
+
+
+<script>
+// ── PWA MANIFEST ──
+const manifest = {
+  name: "Pizzelato — Sistema de Gestão",
+  short_name: "Pizzelato",
+  description: "Sistema de gestão para o Pizzelato — Urban Pizza Cone",
+  start_url: "./",
+  display: "standalone",
+  background_color: "#f3f4f6",
+  theme_color: "#e8681a",
+  orientation: "portrait-primary",
+  icons: [
+    {
+      src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23e8681a'/><text y='.85em' font-size='70' x='15'>🍕</text></svg>",
+      sizes: "192x192",
+      type: "image/svg+xml"
+    },
+    {
+      src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect width='100' height='100' rx='20' fill='%23e8681a'/><text y='.85em' font-size='70' x='15'>🍕</text></svg>",
+      sizes: "512x512",
+      type: "image/svg+xml"
+    }
+  ],
+  categories: ["business", "productivity"],
+  shortcuts: [
+    {
+      name: "Lançar Pedido",
+      short_name: "Pedido",
+      description: "Registrar nova venda",
+      url: "./#vendas",
+      icons: [{ src: "data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><text y='.9em' font-size='90'>🍕</text></svg>", sizes: "96x96" }]
+    }
+  ]
+};
+
+// Criar manifest como blob e linkar
+const manifestBlob = new Blob([JSON.stringify(manifest)], {type: 'application/json'});
+const manifestUrl = URL.createObjectURL(manifestBlob);
+const manifestLink = document.querySelector('link[rel="manifest"]');
+if(manifestLink) manifestLink.href = manifestUrl;
+else {
+  const link = document.createElement('link');
+  link.rel = 'manifest';
+  link.href = manifestUrl;
+  document.head.appendChild(link);
+}
+
+// Service Worker removido (requer HTTPS + arquivo separado)
+
+// ── BOTÃO INSTALAR APP ──
+let deferredPrompt = null;
+window.addEventListener('beforeinstallprompt', e => {
+  e.preventDefault();
+  deferredPrompt = e;
+  // Mostrar botão de instalação
+  const btn = document.getElementById('btn-instalar');
+  if(btn) btn.style.display = 'flex';
+});
+
+window.addEventListener('appinstalled', () => {
+  deferredPrompt = null;
+  const btn = document.getElementById('btn-instalar');
+  if(btn) btn.style.display = 'none';
+  console.log('App instalado!');
+});
+
+function instalarApp(){
+  if(deferredPrompt){
+    deferredPrompt.prompt();
+    deferredPrompt.userChoice.then(choice => {
+      if(choice.outcome === 'accepted') console.log('App instalado');
+      deferredPrompt = null;
+    });
+  }
+}
+window.instalarApp = instalarApp;
+</script>
+
+
+<script>
+// Detectar iOS e mostrar dica de instalação
+(function(){
+  const isIOS = /iphone|ipad|ipod/i.test(navigator.userAgent) && !window.MSStream;
+  const isStandalone = window.navigator.standalone;
+  if(isIOS && !isStandalone){
+    setTimeout(()=>{
+      const hint = document.createElement('div');
+      hint.style.cssText = 'position:fixed;bottom:20px;left:50%;transform:translateX(-50%);background:#1f2937;color:#fff;padding:12px 18px;border-radius:12px;font-size:13px;z-index:9999;text-align:center;max-width:280px;box-shadow:0 8px 24px rgba(0,0,0,.3);animation:fadeIn .3s ease';
+      hint.innerHTML = '📲 Para instalar: toque em <b>Compartilhar</b> → <b>Adicionar à Tela de Início</b>';
+      const close = document.createElement('button');
+      close.textContent = '×';
+      close.style.cssText = 'position:absolute;top:6px;right:10px;background:none;border:none;color:#fff;font-size:18px;cursor:pointer;line-height:1';
+      close.onclick = ()=>hint.remove();
+      hint.appendChild(close);
+      document.body.appendChild(hint);
+      setTimeout(()=>hint.remove(), 8000);
+    }, 3000);
+  }
+})();
+</script>
 
 </body>
 </html>
