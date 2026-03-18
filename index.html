@@ -1011,7 +1011,9 @@ const PERMS = {
 // ══ STATE ══
 let st = {
   vendas: [], estoque: [], receitas: [], campanhas: [],
-  usuarios: [], ideias: [], loaded: false
+  usuarios: [], ideias: [], clientes: [], auditoria: [],
+  waMsgs: [], config: {meta:6000, taxaDeb:1.5, taxaCred:2.5, apiKey:''},
+  loaded: false
 };
 let curUser = null;
 let unsubVendas, unsubEstoque, unsubReceitas, unsubCamp, unsubUsers;
@@ -1107,11 +1109,32 @@ async function initFirebase() {
     setSyncStatus(false);
   }
 
-    // ── CARREGAR CONFIGURAÇÕES (API KEY, META) ──
+    // ── CARREGAR CONFIGURAÇÕES ──
     const cfgDoc = await getDoc(doc(db,'config','settings'));
     if(cfgDoc.exists()) st.config = {...st.config, ...(cfgDoc.data().data||{})};
     onSnapshot(doc(db,'config','settings'), snap => {
       if(snap.exists()) st.config = {...st.config, ...(snap.data().data||{})};
+    });
+    // ── CLIENTES ──
+    const cliDoc = await getDoc(doc(db,'config','clientes'));
+    if(!cliDoc.exists()) await setDoc(doc(db,'config','clientes'),{data:[]});
+    st.clientes = cliDoc.exists() ? cliDoc.data().data||[] : [];
+    onSnapshot(doc(db,'config','clientes'), snap => {
+      if(snap.exists()){ st.clientes = snap.data().data||[]; if(st.loaded) rdCliStats(); }
+    });
+    // ── AUDITORIA ──
+    const audDoc = await getDoc(doc(db,'config','auditoria'));
+    if(!audDoc.exists()) await setDoc(doc(db,'config','auditoria'),{data:[]});
+    st.auditoria = audDoc.exists() ? audDoc.data().data||[] : [];
+    onSnapshot(doc(db,'config','auditoria'), snap => {
+      if(snap.exists()) st.auditoria = snap.data().data||[];
+    });
+    // ── WHATSAPP MSGS ──
+    const waDoc = await getDoc(doc(db,'config','waMsgs'));
+    if(!waDoc.exists()) await setDoc(doc(db,'config','waMsgs'),{data:[]});
+    st.waMsgs = waDoc.exists() ? waDoc.data().data||[] : [];
+    onSnapshot(doc(db,'config','waMsgs'), snap => {
+      if(snap.exists()) st.waMsgs = snap.data().data||[];
     });
 }
 
