@@ -325,6 +325,7 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
     <div class="ni" onclick="goTo('pagamentos')" id="nav-pagamentos"><span class="ico">💳</span><span>Pagamentos</span></div>
     <div class="ni" onclick="goTo('metas')" id="nav-metas"><span class="ico">🎯</span><span>Metas Anuais</span></div>
     <div class="ni" onclick="goTo('clientes')" id="nav-clientes"><span class="ico">👥</span><span>CRM Clientes</span></div>
+    <div class="ni" onclick="goTo('fidelidade')" id="nav-fidelidade"><span class="ico">⭐</span><span>Fidelidade</span><span class="nb" id="nb-fid" style="display:none">0</span></div>
     <div class="ni" onclick="goTo('whatsapp')" id="nav-whatsapp"><span class="ico">💬</span><span>WhatsApp & IA</span></div>
     <div class="ni" onclick="goTo('ia')" id="nav-ia"><span class="ico">🧠</span><span>IA Estratégica</span></div>
     <div class="ni" onclick="goTo('relatorio')" id="nav-relatorio"><span class="ico">📄</span><span>Relatório Diário</span></div>
@@ -935,6 +936,105 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
     </div>
   </div>
 
+
+  <!-- PROGRAMA DE FIDELIDADE -->
+  <div class="page" id="page-fidelidade">
+    <!-- Banner do programa -->
+    <div style="background:linear-gradient(135deg,#1a0a00,#3d1a00);border-radius:14px;padding:22px;color:#fff;margin-bottom:16px;position:relative;overflow:hidden">
+      <div style="position:absolute;top:-20px;right:-20px;font-size:100px;opacity:.08">⭐</div>
+      <div style="position:relative;z-index:1">
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:24px;letter-spacing:4px;color:#f59e0b;margin-bottom:4px">🍕 PROGRAMA DE FIDELIDADE</div>
+        <div style="font-size:14px;color:rgba(255,255,255,.6);margin-bottom:14px">A cada <b style="color:#f59e0b">5 pedidos</b> o cliente ganha <b style="color:#f59e0b">1 cone grátis</b> da categoria Tradicional</div>
+        <div style="display:flex;gap:12px;flex-wrap:wrap">
+          <div style="padding:10px 16px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:9px;text-align:center">
+            <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Clientes no Programa</div>
+            <div style="font-size:22px;font-weight:800;color:#f59e0b" id="fid-total">0</div>
+          </div>
+          <div style="padding:10px 16px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:9px;text-align:center">
+            <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Prontos para Resgatar</div>
+            <div style="font-size:22px;font-weight:800;color:#4ade80" id="fid-prontos">0</div>
+          </div>
+          <div style="padding:10px 16px;background:rgba(245,158,11,.15);border:1px solid rgba(245,158,11,.3);border-radius:9px;text-align:center">
+            <div style="font-size:10px;color:rgba(255,255,255,.4);text-transform:uppercase;letter-spacing:1px;margin-bottom:2px">Cones Resgatados</div>
+            <div style="font-size:22px;font-weight:800;color:#a78bfa" id="fid-resgatados">0</div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <div class="crow c2" style="align-items:start">
+      <div>
+        <!-- Clientes prontos para resgatar -->
+        <div class="panel" style="margin-bottom:13px">
+          <div class="ph"><span class="ptitle" style="color:#16a34a">🎉 Prontos para Resgatar o Cone Grátis!</span></div>
+          <div class="pb" id="fid-prontos-lista">
+            <p style="font-size:13px;color:var(--txt3)">Nenhum cliente pronto ainda.</p>
+          </div>
+        </div>
+
+        <!-- Buscar cliente para ver cartela -->
+        <div class="panel">
+          <div class="ph"><span class="ptitle">🔍 Consultar Cliente</span></div>
+          <div class="pb">
+            <div style="display:flex;gap:8px;margin-bottom:13px">
+              <input class="fi" id="fid-busca" placeholder="Nome ou WhatsApp..." style="flex:1" oninput="buscarFidelidade()">
+              <button class="btn bo bsm" onclick="buscarFidelidade()">Buscar</button>
+            </div>
+            <div id="fid-busca-result"></div>
+          </div>
+        </div>
+      </div>
+
+      <div>
+        <!-- Ranking de clientes mais fiéis -->
+        <div class="panel" style="margin-bottom:13px">
+          <div class="ph"><span class="ptitle">🏆 Ranking de Fidelidade</span></div>
+          <table class="tbl">
+            <thead><tr><th>#</th><th>Cliente</th><th class="r">Pedidos</th><th class="r">Cones Ganhos</th><th>Progresso</th></tr></thead>
+            <tbody id="fid-ranking"></tbody>
+          </table>
+        </div>
+
+        <!-- Ações rápidas -->
+        <div class="panel">
+          <div class="ph"><span class="ptitle">⚡ Ações Rápidas</span></div>
+          <div class="pb" style="display:grid;gap:8px">
+            <button class="btn bgh" style="text-align:left;justify-content:flex-start" onclick="gerarMsgFidelidade()">📲 Gerar mensagem WhatsApp de fidelidade (IA)</button>
+            <button class="btn bgh" style="text-align:left;justify-content:flex-start" onclick="verClientesSemCadastro()">👤 Ver clientes sem cadastro no programa</button>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <!-- MODAL RESGATAR CONE -->
+  <div id="mo-resgatar" style="position:fixed;inset:0;background:rgba(0,0,0,.6);z-index:900;display:none;align-items:center;justify-content:center;padding:16px">
+    <div style="background:#fff;border-radius:16px;width:100%;max-width:420px;box-shadow:0 25px 60px rgba(0,0,0,.3);overflow:hidden">
+      <div style="background:linear-gradient(135deg,#1a0a00,#3d1a00);padding:20px;text-align:center">
+        <div style="font-size:48px;margin-bottom:8px">🎉</div>
+        <div style="font-family:'Bebas Neue',sans-serif;font-size:22px;letter-spacing:3px;color:#f59e0b">CONE GRÁTIS!</div>
+        <div style="font-size:13px;color:rgba(255,255,255,.6);margin-top:4px" id="mo-res-nome">Cliente</div>
+      </div>
+      <div style="padding:20px">
+        <div style="text-align:center;margin-bottom:16px">
+          <div style="font-size:14px;color:#374151;margin-bottom:8px">Este cliente completou <b style="color:#e8681a">5 pedidos</b>!</div>
+          <div style="font-size:13px;color:#6b7280">Escolha o sabor Tradicional que ele vai ganhar:</div>
+        </div>
+        <div class="fg"><label class="flbl">Sabor do Cone Grátis</label>
+          <select class="fs" id="mo-res-sabor">
+            <option>Calabresa</option><option>Frango Cremoso</option><option>Bacon Tradicional</option>
+            <option>Portuguesa</option><option>Atum</option>
+          </select>
+        </div>
+        <input type="hidden" id="mo-res-idx">
+        <div style="display:flex;gap:8px;margin-top:14px">
+          <button onclick="document.getElementById('mo-resgatar').style.display='none'" style="flex:1;padding:11px;border-radius:9px;border:1.5px solid #d1d5db;background:transparent;font-family:inherit;font-size:14px;font-weight:600;cursor:pointer;color:#374151">Cancelar</button>
+          <button onclick="confirmarResgate()" style="flex:1;padding:11px;border-radius:9px;border:none;background:linear-gradient(135deg,#d97706,#f59e0b);color:#fff;font-family:inherit;font-size:14px;font-weight:700;cursor:pointer">✅ Confirmar Resgate</button>
+        </div>
+      </div>
+    </div>
+  </div>
+
 </main>
 </div>
 
@@ -1209,7 +1309,7 @@ async function initFirebase() {
     if(!cliDoc.exists()) await setDoc(doc(db,'config','clientes'),{data:[]});
     st.clientes = cliDoc.exists() ? cliDoc.data().data||[] : [];
     onSnapshot(doc(db,'config','clientes'), snap => {
-      if(snap.exists()){ st.clientes = snap.data().data||[]; if(st.loaded) rdCliStats(); }
+      if(snap.exists()){ st.clientes = snap.data().data||[]; if(st.loaded){ rdCliStats(); atualizarBadgeFidelidade(); } }
     });
     // ── AUDITORIA ──
     const audDoc = await getDoc(doc(db,'config','auditoria'));
@@ -1269,7 +1369,7 @@ function initApp(){
 
 function applyPerms(){
   const perms=PERMS[curUser.role]||[];
-  ["dashboard","vendas","produtos","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","relatorio","audit","usuarios","config"].forEach(p=>{
+  ["dashboard","vendas","produtos","fidelidade","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","relatorio","audit","usuarios","config"].forEach(p=>{
     const nav=document.getElementById('nav-'+p);
     if(nav) nav.classList.toggle('locked',!perms.includes(p));
   });
@@ -1316,6 +1416,7 @@ function render(p){
     case 'pagamentos': rdPagamentos(); break;
     case 'config':     rdConfig();    break;
     case 'produtos':   rdProdutos();  break;
+    case 'fidelidade': rdFidelidade(); break;
     case 'usuarios':   rdUsuarios(); break;
   }
   rdSbar();
@@ -2797,6 +2898,213 @@ async function toggleProduto(idx){
   }catch(e){ toast('⚠️ Erro','r'); }
 }
 window.toggleProduto = toggleProduto;
+
+
+// ═══════════════════════════════════════
+// PROGRAMA DE FIDELIDADE
+// ═══════════════════════════════════════
+const FIDELIDADE_META = 5; // pedidos para ganhar cone grátis
+
+function rdFidelidade(){
+  const clientes = st.clientes || [];
+  const prontos = clientes.filter(c => {
+    const pedidos = c.pedidos || 0;
+    const resgatados = c.conesResgatados || 0;
+    const acumulados = pedidos - (resgatados * FIDELIDADE_META);
+    return acumulados >= FIDELIDADE_META;
+  });
+  const totalResgatados = clientes.reduce((s,c) => s + (c.conesResgatados||0), 0);
+
+  const set2=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set2('fid-total', String(clientes.filter(c=>(c.pedidos||0)>0).length));
+  set2('fid-prontos', String(prontos.length));
+  set2('fid-resgatados', String(totalResgatados));
+
+  // Badge no nav
+  const nb = document.getElementById('nb-fid');
+  if(nb){ nb.textContent = String(prontos.length); nb.style.display = prontos.length > 0 ? '' : 'none'; }
+
+  // Lista de prontos para resgatar
+  const pEl = document.getElementById('fid-prontos-lista');
+  if(pEl){
+    if(prontos.length === 0){
+      pEl.innerHTML = '<p style="font-size:13px;color:var(--txt3)">Nenhum cliente pronto ainda. Continue incentivando! 🍕</p>';
+    } else {
+      pEl.innerHTML = prontos.map((c,i) => {
+        const ri = st.clientes.indexOf(c);
+        const acum = (c.pedidos||0) - ((c.conesResgatados||0)*FIDELIDADE_META);
+        return `<div style="display:flex;align-items:center;justify-content:space-between;padding:11px 13px;background:rgba(22,163,74,.06);border:1.5px solid rgba(22,163,74,.2);border-radius:10px;margin-bottom:8px">
+          <div>
+            <div style="font-size:14px;font-weight:700;color:#111827">${c.nome}</div>
+            <div style="font-size:12px;color:#6b7280">📱 ${c.tel||'—'} · <b style="color:#e8681a">${c.pedidos||0} pedidos</b> · ${Math.floor(acum/FIDELIDADE_META)} cone(s) a resgatar</div>
+          </div>
+          <button onclick="abrirResgatar(${ri})" style="background:linear-gradient(135deg,#d97706,#f59e0b);border:none;border-radius:9px;color:#fff;padding:9px 16px;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer;white-space:nowrap">🎁 Resgatar</button>
+        </div>`;
+      }).join('');
+    }
+  }
+
+  // Ranking
+  const rankEl = document.getElementById('fid-ranking');
+  if(rankEl){
+    const sorted = [...clientes].filter(c=>(c.pedidos||0)>0).sort((a,b)=>(b.pedidos||0)-(a.pedidos||0));
+    const medals = ['🥇','🥈','🥉'];
+    rankEl.innerHTML = sorted.length === 0
+      ? '<tr><td colspan="5" style="text-align:center;color:var(--txt3);padding:14px">Nenhum cliente com pedidos ainda.</td></tr>'
+      : sorted.slice(0,10).map((c,i) => {
+          const ped = c.pedidos||0;
+          const res = c.conesResgatados||0;
+          const acum = ped - (res*FIDELIDADE_META);
+          const prog = Math.min((acum % FIDELIDADE_META) / FIDELIDADE_META, 1);
+          const conesGanhos = res + (acum >= FIDELIDADE_META ? Math.floor(acum/FIDELIDADE_META) : 0);
+          return `<tr>
+            <td>${medals[i]||i+1}</td>
+            <td><b>${c.nome}</b><br><span style="font-size:11px;color:#9ca3af">${c.tel||'—'}</span></td>
+            <td class="r"><b>${ped}</b></td>
+            <td class="r" style="color:#d97706;font-weight:700">${res}</td>
+            <td style="min-width:120px">
+              <div style="display:flex;align-items:center;gap:6px">
+                <div style="flex:1;height:6px;background:#e5e7eb;border-radius:3px;overflow:hidden">
+                  <div style="height:100%;background:linear-gradient(90deg,#d97706,#f59e0b);width:${prog*100}%;border-radius:3px"></div>
+                </div>
+                <span style="font-size:11px;color:#6b7280;white-space:nowrap">${acum%FIDELIDADE_META}/${FIDELIDADE_META}</span>
+              </div>
+            </td>
+          </tr>`;
+        }).join('');
+  }
+}
+window.rdFidelidade = rdFidelidade;
+
+function buscarFidelidade(){
+  const q = (document.getElementById('fid-busca')?.value||'').toLowerCase().trim();
+  const el = document.getElementById('fid-busca-result'); if(!el) return;
+  if(!q){ el.innerHTML=''; return; }
+  const found = st.clientes.filter(c => c.nome.toLowerCase().includes(q)||(c.tel||'').includes(q));
+  if(found.length === 0){ el.innerHTML='<p style="font-size:13px;color:#9ca3af">Nenhum cliente encontrado.</p>'; return; }
+  el.innerHTML = found.slice(0,5).map(c => {
+    const ri = st.clientes.indexOf(c);
+    const ped = c.pedidos||0;
+    const res = c.conesResgatados||0;
+    const acum = ped - (res*FIDELIDADE_META);
+    const prog = Math.min((acum % FIDELIDADE_META) / FIDELIDADE_META, 1);
+    const pronto = acum >= FIDELIDADE_META;
+    // Cartela visual
+    const selos = [];
+    for(let i=0;i<FIDELIDADE_META;i++){
+      selos.push(`<div style="width:36px;height:36px;border-radius:50%;border:2px solid ${i<(acum%FIDELIDADE_META)?'#f59e0b':'#e5e7eb'};background:${i<(acum%FIDELIDADE_META)?'rgba(245,158,11,.15)':'#f9fafb'};display:flex;align-items:center;justify-content:center;font-size:16px">${i<(acum%FIDELIDADE_META)?'🍕':'⭕'}</div>`);
+    }
+    return `<div style="padding:14px;background:#f9fafb;border-radius:10px;border:1px solid #e5e7eb;margin-bottom:8px">
+      <div style="display:flex;justify-content:space-between;align-items:flex-start;margin-bottom:10px">
+        <div>
+          <div style="font-size:15px;font-weight:700;color:#111827">${c.nome}</div>
+          <div style="font-size:12px;color:#6b7280">${ped} pedidos · ${res} cones resgatados</div>
+        </div>
+        ${pronto?`<button onclick="abrirResgatar(${ri})" style="background:linear-gradient(135deg,#d97706,#f59e0b);border:none;border-radius:8px;color:#fff;padding:7px 14px;font-family:inherit;font-size:12px;font-weight:700;cursor:pointer">🎁 Resgatar!</button>`:''}
+      </div>
+      <div style="display:flex;gap:6px;margin-bottom:8px;flex-wrap:wrap">${selos.join('')}</div>
+      <div style="font-size:12px;color:#6b7280">${pronto?'<b style="color:#16a34a">✅ Pronto para resgatar o cone grátis!</b>':`Falta(m) <b style="color:#e8681a">${FIDELIDADE_META-(acum%FIDELIDADE_META)}</b> pedido(s) para o próximo cone`}</div>
+    </div>`;
+  }).join('');
+}
+window.buscarFidelidade = buscarFidelidade;
+
+function abrirResgatar(idx){
+  const c = st.clientes[idx]; if(!c) return;
+  const nomeEl = document.getElementById('mo-res-nome'); if(nomeEl) nomeEl.textContent = c.nome;
+  const idxEl = document.getElementById('mo-res-idx'); if(idxEl) idxEl.value = String(idx);
+  // Popular sabores tradicionais
+  const saborSel = document.getElementById('mo-res-sabor');
+  if(saborSel){
+    const tradicionais = PRODS.filter(p=>p.cat==='Tradicional'&&p.ativo!==false);
+    saborSel.innerHTML = tradicionais.map(p=>`<option>${p.n}</option>`).join('');
+  }
+  document.getElementById('mo-resgatar').style.display='flex';
+}
+window.abrirResgatar = abrirResgatar;
+
+async function confirmarResgate(){
+  const idx = parseInt(document.getElementById('mo-res-idx')?.value);
+  const sabor = document.getElementById('mo-res-sabor')?.value||'Calabresa';
+  const c = st.clientes[idx]; if(!c) return;
+  const nC = [...st.clientes];
+  nC[idx] = {...c, conesResgatados: (c.conesResgatados||0)+1};
+  try{
+    await setDoc(doc(db,'config','clientes'),{data:nC});
+    document.getElementById('mo-resgatar').style.display='none';
+    toast(`🎉 ${c.nome} resgatou 1 cone de ${sabor}! Anotado na fidelidade.`,'g');
+    // Abrir WhatsApp com mensagem de parabéns
+    if(c.tel){
+      const msg = `🍕 *Pizzelato - Cone Grátis!* 🎉\n\nOlá ${c.nome}! Você completou seus 5 pedidos e ganhou um cone Tradicional grátis!\n\nEscolha seu sabor: Calabresa, Frango Cremoso, Bacon, Portuguesa ou Atum.\n\nObrigado pela sua fidelidade! 🧡`;
+      const tel = c.tel.replace(/[^0-9]/g,'');
+      window.open(`https://wa.me/55${tel}?text=${encodeURIComponent(msg)}`,'_blank');
+    }
+  }catch(e){ toast('⚠️ Erro ao registrar resgate','r'); }
+}
+window.confirmarResgate = confirmarResgate;
+
+function verClientesSemCadastro(){
+  // Clientes que aparecem nos pedidos mas não estão no CRM
+  const nomesNoCRM = new Set(st.clientes.map(c=>c.nome.toLowerCase()));
+  const semCadastro = [];
+  st.vendas.forEach(v=>{
+    if(v.cliente && !nomesNoCRM.has(v.cliente.toLowerCase())){
+      semCadastro.push(v.cliente);
+    }
+  });
+  const unicos = [...new Set(semCadastro)];
+  if(unicos.length===0){
+    toast('✅ Todos os clientes com pedidos estão cadastrados no CRM!','g');
+  } else {
+    alert(`Clientes sem cadastro no CRM:\n\n${unicos.join('\n')}\n\nCadastre-os em CRM Clientes para participarem do programa de fidelidade.`);
+  }
+}
+window.verClientesSemCadastro = verClientesSemCadastro;
+
+async function gerarMsgFidelidade(){
+  const prontos = st.clientes.filter(c=>{
+    const acum=(c.pedidos||0)-((c.conesResgatados||0)*FIDELIDADE_META);
+    return acum>=FIDELIDADE_META;
+  });
+  const perto = st.clientes.filter(c=>{
+    const acum=(c.pedidos||0)-((c.conesResgatados||0)*FIDELIDADE_META);
+    return acum===FIDELIDADE_META-1;
+  });
+  const key = st.config?.apiKey||'';
+  if(!key){ toast('⚠️ Configure a Chave API em Configurações','r'); return; }
+  toast('⏳ Gerando mensagens...','o');
+  try{
+    const res = await fetch('https://api.anthropic.com/v1/messages',{
+      method:'POST',
+      headers:{'Content-Type':'application/json','x-api-key':key,'anthropic-version':'2023-06-01','anthropic-dangerous-direct-browser-access':'true'},
+      body:JSON.stringify({model:'claude-sonnet-4-20250514',max_tokens:600,
+        system:'Especialista em marketing para pizza delivery no Brasil.',
+        messages:[{role:'user',content:`Pizzelato - pizza cone delivery - Itabaiana, SE.\nPrograma: a cada 5 pedidos ganha 1 cone tradicional grátis.\n\nClientes prontos p/ resgatar (${prontos.length}): ${prontos.slice(0,3).map(c=>c.nome).join(', ')}\nClientes faltando 1 pedido (${perto.length}): ${perto.slice(0,3).map(c=>c.nome).join(', ')}\n\nCrie:\n1. Mensagem WhatsApp para clientes prontos para resgatar (animada, com CTA)\n2. Mensagem WhatsApp para clientes faltando 1 pedido (incentivo urgente)\nFormato: separado por seção, pronto para copiar.`}]})
+    });
+    const data = await res.json();
+    const txt = data.content?.[0]?.text||'Erro';
+    // Mostrar em modal
+    const mo = document.getElementById('mo-det');
+    const tit = document.getElementById('mo-det-tit');
+    const bd = document.getElementById('mo-det-bd');
+    if(mo&&tit&&bd){
+      tit.textContent='📲 Mensagens de Fidelidade (IA)';
+      bd.innerHTML=`<div style="font-size:13px;line-height:1.8;white-space:pre-wrap;background:#f9fafb;padding:14px;border-radius:9px;border:1px solid #e5e7eb">${txt}</div><button onclick="navigator.clipboard.writeText(${JSON.stringify(txt)}).then(()=>toast('✅ Copiado!','g'))" style="margin-top:12px;padding:9px 16px;background:linear-gradient(135deg,#e8681a,#f07830);border:none;border-radius:8px;color:#fff;font-family:inherit;font-size:13px;font-weight:700;cursor:pointer">📋 Copiar Mensagens</button>`;
+      mo.style.display='flex';
+    }
+  }catch(e){ toast('⚠️ Erro de conexão','r'); }
+}
+window.gerarMsgFidelidade = gerarMsgFidelidade;
+
+// Atualizar badge de fidelidade quando clientes mudam
+function atualizarBadgeFidelidade(){
+  const prontos = (st.clientes||[]).filter(c=>{
+    const acum=(c.pedidos||0)-((c.conesResgatados||0)*FIDELIDADE_META);
+    return acum>=FIDELIDADE_META;
+  });
+  const nb=document.getElementById('nb-fid');
+  if(nb){nb.textContent=String(prontos.length);nb.style.display=prontos.length>0?'':'none';}
+}
 
 updDate();
 setInterval(updDate,60000);
