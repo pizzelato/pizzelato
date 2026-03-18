@@ -313,6 +313,7 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
     <div class="sb-sec">Principal</div>
     <div class="ni active" onclick="goTo('dashboard')" id="nav-dashboard"><span class="ico">📊</span><span>Dashboard</span></div>
     <div class="ni" onclick="goTo('vendas')" id="nav-vendas"><span class="ico">🍕</span><span>Lançar Vendas</span></div>
+    <div class="ni" onclick="goTo('produtos')" id="nav-produtos"><span class="ico">📋</span><span>Gerenciar Cardápio</span></div>
     <div class="sb-sec">Estoque</div>
     <div class="ni" onclick="goTo('estoque')" id="nav-estoque"><span class="ico">📦</span><span>Saldo de Estoque</span><span class="nb" id="nb-est" style="display:none">0</span></div>
     <div class="ni" onclick="goTo('entradas')" id="nav-entradas"><span class="ico">📥</span><span>Entradas</span></div>
@@ -852,6 +853,88 @@ body{background:var(--bg);color:var(--t);font-family:'DM Sans',sans-serif;font-s
     </div>
   </div>
 
+
+  <!-- GERENCIAR CARDÁPIO -->
+  <div class="page" id="page-produtos">
+    <div class="crow c2" style="margin-bottom:14px;align-items:start">
+      <div class="panel" style="margin-bottom:0">
+        <div class="ph"><span class="ptitle" id="prod-form-title">➕ Novo Produto</span></div>
+        <div class="pb">
+          <div class="frow f2">
+            <div class="fg"><label class="flbl">Nome do Sabor</label><input class="fi" id="prod-nome" placeholder="ex: Pistache Premium"></div>
+            <div class="fg"><label class="flbl">Preço (R$)</label><input type="number" class="fi" id="prod-preco" placeholder="ex: 27.00" min="0" step="0.50"></div>
+          </div>
+          <div class="frow f2">
+            <div class="fg"><label class="flbl">Categoria</label>
+              <select class="fs" id="prod-cat">
+                <option value="Tradicional">Tradicional</option>
+                <option value="Premium">Premium</option>
+                <option value="Doce">Doce</option>
+                <option value="Assinatura">Assinatura</option>
+                <option value="Bebida">Bebida</option>
+                <option value="Extra">Extra</option>
+                <option value="Campanha">🔥 Campanha</option>
+              </select>
+            </div>
+            <div class="fg"><label class="flbl">Cor (hex)</label>
+              <select class="fs" id="prod-cor">
+                <option value="#1A5276">🔵 Azul (Tradicional)</option>
+                <option value="#1E8449">🟢 Verde (Premium)</option>
+                <option value="#7D3C98">🟣 Roxo (Doce)</option>
+                <option value="#E8681A">🟠 Laranja (Assinatura)</option>
+                <option value="#1A6B8A">🔷 Azul Claro (Bebida)</option>
+                <option value="#E74C3C">🔴 Vermelho (Campanha)</option>
+                <option value="#7D6608">🟡 Dourado (Extra)</option>
+              </select>
+            </div>
+          </div>
+          <div class="fg" style="display:flex;align-items:center;gap:10px;margin-bottom:0">
+            <input type="checkbox" id="prod-ativo" checked style="width:16px;height:16px;cursor:pointer">
+            <label for="prod-ativo" style="font-size:13px;color:var(--t2);cursor:pointer">Produto ativo no cardápio</label>
+          </div>
+          <input type="hidden" id="prod-idx" value="-1">
+          <div style="display:flex;gap:8px;margin-top:14px">
+            <button class="btn bo" style="flex:1" onclick="salvarProduto()">💾 Salvar Produto</button>
+            <button class="btn bou" onclick="cancelarEdicaoProd()" id="prod-cancel" style="display:none">Cancelar</button>
+          </div>
+        </div>
+      </div>
+      <div>
+        <div class="crow c3" style="margin-bottom:12px">
+          <div class="sc co"><div class="sc-lbl">Total</div><div class="sc-val" id="prod-tot">0</div></div>
+          <div class="sc cg"><div class="sc-lbl">Ativos</div><div class="sc-val" id="prod-ativos">0</div></div>
+          <div class="sc cr"><div class="sc-lbl">Inativos</div><div class="sc-val" id="prod-inat">0</div></div>
+        </div>
+        <div class="panel" style="margin-bottom:0">
+          <div class="ph"><span class="ptitle">📊 Categorias</span></div>
+          <div class="pb" id="prod-cats" style="font-size:13px"></div>
+        </div>
+      </div>
+    </div>
+    <div class="panel">
+      <div class="ph"><span class="ptitle">🍕 Cardápio Completo</span>
+        <div style="display:flex;gap:6px">
+          <select class="fs bsm" id="prod-filtro" onchange="filtrarProdutos()" style="width:140px;border-radius:7px">
+            <option value="">Todas as categorias</option>
+            <option value="Tradicional">Tradicional</option>
+            <option value="Premium">Premium</option>
+            <option value="Doce">Doce</option>
+            <option value="Assinatura">Assinatura</option>
+            <option value="Campanha">Campanha</option>
+            <option value="Bebida">Bebida</option>
+            <option value="Extra">Extra</option>
+          </select>
+        </div>
+      </div>
+      <div style="overflow-x:auto">
+        <table class="tbl">
+          <thead><tr><th>Nome</th><th>Categoria</th><th class="r">Preço</th><th class="r">Custo Real</th><th class="r">Margem</th><th>Status</th><th>Ações</th></tr></thead>
+          <tbody id="prod-tbl"></tbody>
+        </table>
+      </div>
+    </div>
+  </div>
+
 </main>
 </div>
 
@@ -1003,8 +1086,8 @@ const RECEITAS_BASE = [
 ];
 
 const PERMS = {
-  admin:    ["dashboard","vendas","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","usuarios","config"],
-  gerente:  ["dashboard","vendas","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","config"],
+  admin:    ["dashboard","vendas","produtos","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","usuarios","config"],
+  gerente:  ["dashboard","vendas","produtos","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","ig","relatorio","audit","config"],
   operador: ["dashboard","vendas","estoque","entradas","receitas","clientes","whatsapp"],
   caixa:    ["dashboard","vendas"],
 };
@@ -1107,6 +1190,7 @@ async function initFirebase() {
     setSyncStatus(true);
     document.getElementById('loading').style.display='none';
     document.getElementById('login-screen').style.display='flex';
+    await initProdutos();
     st.loaded=true;
   } catch(e){
     console.error(e);
@@ -1185,7 +1269,7 @@ function initApp(){
 
 function applyPerms(){
   const perms=PERMS[curUser.role]||[];
-  ["dashboard","vendas","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","relatorio","audit","usuarios","config"].forEach(p=>{
+  ["dashboard","vendas","produtos","estoque","entradas","receitas","financeiro","campanhas","pagamentos","metas","clientes","whatsapp","ia","relatorio","audit","usuarios","config"].forEach(p=>{
     const nav=document.getElementById('nav-'+p);
     if(nav) nav.classList.toggle('locked',!perms.includes(p));
   });
@@ -1194,7 +1278,7 @@ function applyPerms(){
 }
 function canAccess(p){ return (PERMS[curUser?.role]||[]).includes(p); }
 
-const TITLES={'config':'CONFIGURAÇÕES','pagamentos':'PAGAMENTOS','metas':'METAS ANUAIS','clientes':'CRM CLIENTES','whatsapp':'WHATSAPP & IA','ig':'INSTAGRAM','audit':'AUDITORIA',dashboard:'DASHBOARD',vendas:'LANÇAR VENDAS',estoque:'SALDO DE ESTOQUE',
+const TITLES={'config':'CONFIGURAÇÕES','produtos':'GERENCIAR CARDÁPIO','pagamentos':'PAGAMENTOS','metas':'METAS ANUAIS','clientes':'CRM CLIENTES','whatsapp':'WHATSAPP & IA','ig':'INSTAGRAM','audit':'AUDITORIA',dashboard:'DASHBOARD',vendas:'LANÇAR VENDAS',estoque:'SALDO DE ESTOQUE',
   entradas:'ENTRADA DE ESTOQUE',receitas:'RECEITAS & CUSTO REAL',financeiro:'FINANCEIRO',
   campanhas:'CAMPANHAS & ROI',ia:'IA ESTRATÉGICA',relatorio:'RELATÓRIO DIÁRIO',usuarios:'USUÁRIOS'};
 
@@ -1231,6 +1315,7 @@ function render(p){
     case 'metas': rdMetas(); break;
     case 'pagamentos': rdPagamentos(); break;
     case 'config':     rdConfig();    break;
+    case 'produtos':   rdProdutos();  break;
     case 'usuarios':   rdUsuarios(); break;
   }
   rdSbar();
@@ -2534,6 +2619,169 @@ function Rcu(v){
   if(v < 0.1)  return 'R$ '+v.toFixed(3);
   return 'R$ '+v.toFixed(2).replace('.',',');
 }
+
+
+// ═══════════════════════════════════════
+// GERENCIAR CARDÁPIO — PRODUTOS DINÂMICOS
+// ═══════════════════════════════════════
+
+// Carregar produtos do Firebase ou usar padrão
+async function initProdutos(){
+  const docP = await getDoc(doc(db,'config','produtos'));
+  if(docP.exists()){
+    // Substituir PRODS pelo do Firebase
+    const prods = docP.data().data||[];
+    if(prods.length > 0){
+      // Atualizar array PRODS in-place
+      PRODS.length = 0;
+      prods.forEach(p => PRODS.push(p));
+    }
+  } else {
+    // Salvar PRODS padrão no Firebase
+    await setDoc(doc(db,'config','produtos'),{data:[...PRODS]});
+  }
+  // Listener em tempo real
+  onSnapshot(doc(db,'config','produtos'), snap => {
+    if(snap.exists()){
+      const prods = snap.data().data||[];
+      if(prods.length > 0){
+        PRODS.length = 0;
+        prods.forEach(p => PRODS.push(p));
+        // Atualizar grid de vendas se estiver aberto
+        const active = document.querySelector('.page.active')?.id;
+        if(active === 'page-vendas') rdVendas();
+        if(active === 'page-produtos') rdProdutos();
+      }
+    }
+  });
+}
+window.initProdutos = initProdutos;
+
+function rdProdutos(){
+  const prods = PRODS.filter(p => p && p.n);
+  const ativos = prods.filter(p => p.ativo !== false);
+  const inat = prods.filter(p => p.ativo === false);
+  
+  const set2=(id,v)=>{const e=document.getElementById(id);if(e)e.textContent=v;};
+  set2('prod-tot', String(prods.length));
+  set2('prod-ativos', String(ativos.length));
+  set2('prod-inat', String(inat.length));
+  
+  // Categorias
+  const cats = {};
+  prods.forEach(p => { cats[p.cat] = (cats[p.cat]||0)+1; });
+  const catsEl = document.getElementById('prod-cats');
+  if(catsEl) catsEl.innerHTML = Object.entries(cats).map(([cat,qtd])=>
+    `<div style="display:flex;justify-content:space-between;padding:5px 0;border-bottom:1px solid var(--b1)">
+      <span style="color:var(--t2)">${cat}</span>
+      <span style="font-weight:700;color:var(--o)">${qtd} produto${qtd>1?'s':''}</span>
+    </div>`
+  ).join('');
+  
+  filtrarProdutos();
+}
+window.rdProdutos = rdProdutos;
+
+function filtrarProdutos(){
+  const filtro = document.getElementById('prod-filtro')?.value||'';
+  const prods = PRODS.filter(p => p && p.n);
+  const lista = filtro ? prods.filter(p => p.cat === filtro) : prods;
+  
+  const el = document.getElementById('prod-tbl'); if(!el) return;
+  el.innerHTML = lista.length === 0
+    ? '<tr><td colspan="7" style="text-align:center;color:var(--t3);padding:16px">Nenhum produto.</td></tr>'
+    : lista.map((p,fi) => {
+        const ri = PRODS.indexOf(p);
+        const custo = custoRealProd(ri);
+        const marg = p.p > 0 ? (p.p - custo) / p.p : 0;
+        const ativo = p.ativo !== false;
+        return `<tr style="opacity:${ativo?1:0.45}">
+          <td><div style="display:flex;align-items:center;gap:8px">
+            <div style="width:10px;height:10px;border-radius:50%;background:${p.cor||'#888'};flex-shrink:0"></div>
+            <b>${p.n}</b>
+          </div></td>
+          <td><span style="padding:2px 8px;border-radius:5px;background:${p.cor||'#888'}18;color:${p.cor||'#888'};font-size:11px;font-weight:700">${p.cat}</span></td>
+          <td class="r mono" style="color:var(--o);font-weight:700">${R(p.p)}</td>
+          <td class="r mono" style="color:var(--r2)">${R(custo)}</td>
+          <td class="r mono" style="color:${marg>=.4?'var(--g2)':marg>=.3?'var(--y2)':'var(--r2)'};font-weight:700">${Pct(marg)}</td>
+          <td><span style="padding:2px 9px;border-radius:10px;font-size:11px;font-weight:700;background:${ativo?'rgba(22,163,74,.1)':'rgba(181,32,32,.1)'};color:${ativo?'var(--g2)':'var(--r2)'}">${ativo?'✅ Ativo':'⛔ Inativo'}</span></td>
+          <td><div style="display:flex;gap:4px">
+            <button class="btn bou bxs" onclick="editarProduto(${ri})">✏️ Editar</button>
+            <button class="btn bxs" style="background:${ativo?'rgba(181,32,32,.1)':'rgba(22,163,74,.1)'};color:${ativo?'var(--r2)':'var(--g2)'};border:1px solid ${ativo?'rgba(181,32,32,.2)':'rgba(22,163,74,.2)'}" onclick="toggleProduto(${ri})">${ativo?'⛔ Desativar':'✅ Ativar'}</button>
+          </div></td>
+        </tr>`;
+      }).join('');
+}
+window.filtrarProdutos = filtrarProdutos;
+
+async function salvarProduto(){
+  const nome = document.getElementById('prod-nome')?.value.trim();
+  const preco = parseFloat(document.getElementById('prod-preco')?.value)||0;
+  const cat = document.getElementById('prod-cat')?.value||'Tradicional';
+  const cor = document.getElementById('prod-cor')?.value||'#1A5276';
+  const ativo = document.getElementById('prod-ativo')?.checked !== false;
+  const idx = parseInt(document.getElementById('prod-idx')?.value);
+  
+  if(!nome){ toast('⚠️ Informe o nome do produto','r'); return; }
+  if(preco <= 0){ toast('⚠️ Informe um preço válido','r'); return; }
+  
+  const novoProd = {n:nome, p:preco, cat, cor, ativo};
+  const novaProd = [...PRODS];
+  
+  if(idx >= 0 && idx < PRODS.length){
+    // Editar existente
+    novaProd[idx] = {...novaProd[idx], ...novoProd};
+    toast(`✅ "${nome}" atualizado!`,'g');
+  } else {
+    // Novo produto
+    novaProd.push(novoProd);
+    toast(`✅ "${nome}" adicionado ao cardápio!`,'g');
+  }
+  
+  try{
+    await setDoc(doc(db,'config','produtos'),{data:novaProd});
+    limparFormProd();
+  }catch(e){ toast('⚠️ Erro ao salvar','r'); }
+}
+window.salvarProduto = salvarProduto;
+
+function editarProduto(idx){
+  const p = PRODS[idx]; if(!p) return;
+  document.getElementById('prod-nome').value = p.n;
+  document.getElementById('prod-preco').value = p.p;
+  document.getElementById('prod-cat').value = p.cat;
+  document.getElementById('prod-cor').value = p.cor||'#1A5276';
+  const ativoEl = document.getElementById('prod-ativo'); if(ativoEl) ativoEl.checked = p.ativo !== false;
+  document.getElementById('prod-idx').value = String(idx);
+  const title = document.getElementById('prod-form-title'); if(title) title.textContent = `✏️ Editar: ${p.n}`;
+  const cancel = document.getElementById('prod-cancel'); if(cancel) cancel.style.display='';
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+window.editarProduto = editarProduto;
+
+function cancelarEdicaoProd(){ limparFormProd(); }
+window.cancelarEdicaoProd = cancelarEdicaoProd;
+
+function limparFormProd(){
+  ['prod-nome','prod-preco'].forEach(id=>{const e=document.getElementById(id);if(e)e.value='';});
+  const cat=document.getElementById('prod-cat');if(cat)cat.value='Tradicional';
+  const cor=document.getElementById('prod-cor');if(cor)cor.value='#1A5276';
+  const ativo=document.getElementById('prod-ativo');if(ativo)ativo.checked=true;
+  document.getElementById('prod-idx').value='-1';
+  const title=document.getElementById('prod-form-title');if(title)title.textContent='➕ Novo Produto';
+  const cancel=document.getElementById('prod-cancel');if(cancel)cancel.style.display='none';
+}
+
+async function toggleProduto(idx){
+  const p = PRODS[idx]; if(!p) return;
+  const novaLista = [...PRODS];
+  novaLista[idx] = {...p, ativo: p.ativo === false ? true : false};
+  try{
+    await setDoc(doc(db,'config','produtos'),{data:novaLista});
+    toast(`${novaLista[idx].ativo?'✅ Ativado':'⛔ Desativado'}: ${p.n}`,'g');
+  }catch(e){ toast('⚠️ Erro','r'); }
+}
+window.toggleProduto = toggleProduto;
 
 updDate();
 setInterval(updDate,60000);
