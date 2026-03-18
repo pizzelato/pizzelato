@@ -1341,7 +1341,22 @@ function rdDash(){
   document.getElementById('d-meta-bar').style.width=(pct*100)+'%';
   $('d-meta-badge',Pct(pct));$('d-meta-val',R(m.luc)+' de R$ 6.000');
   $('d-meta-falta',m.luc<6000?'Falta '+R(6000-m.luc):'🎉 Meta atingida!');
-  const topP=PRODS.map((p,i)=>({n:p.n,p:p.p,qtd:vh.reduce((s,v)=>s+(v.qtds[i]||0),0),luc:vh.reduce((s,v)=>s+(v.qtds[i]||0)*(p.p-custoRealProd(i)),0)})).filter(x=>x.qtd>0).sort((a,b)=>b.qtd-a.qtd);
+  const topP=PRODS.map((p,i)=>{
+    const qtdTotal=vh.reduce((s,v)=>s+(v.qtds[i]||0),0);
+    // Lucro por produto: desconta custo, app 8%, e entregador proporcional
+    const lucTotal=vh.reduce((s,v)=>{
+      const q=v.qtds[i]||0; if(!q) return s;
+      const fat_prod=q*p.p;
+      const custo_prod=q*custoRealProd(i);
+      const app_prod=fat_prod*0.08;
+      // Entregador dividido proporcionalmente entre os itens do pedido
+      const total_ped=calcV(v).ped||1;
+      const isDelivery=!v.canal?.toLowerCase().includes('balcão');
+      const entregador_prod=isDelivery?((st.config?.entregador||5)*q/total_ped):0;
+      return s+(fat_prod-custo_prod-app_prod-entregador_prod);
+    },0);
+    return {n:p.n,p:p.p,qtd:qtdTotal,luc:lucTotal};
+  }).filter(x=>x.qtd>0).sort((a,b)=>b.qtd-a.qtd);
   const medals=['🥇','🥈','🥉'];
   document.getElementById('d-top').innerHTML=topP.length===0?'<tr><td colspan="5" style="text-align:center;color:var(--t3);padding:14px">Nenhuma venda hoje</td></tr>':topP.slice(0,6).map((p,i)=>`<tr><td>${medals[i]||i+1}</td><td><b>${p.n}</b></td><td class="r"><b>${p.qtd}</b></td><td class="r" style="color:var(--o)">${R(p.p*p.qtd)}</td><td class="r" style="color:var(--g2)"><b>${R(p.luc)}</b></td></tr>`).join('');
   const al=alertasCrit().concat(alertasWarn()).slice(0,6);
