@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="pt-BR">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>Pizzelato — Sistema de Gestão</title>
+<style>
+*{margin:0;padding:0;box-sizing:border-box}
+body{background:#f3f4f6;font-family:Arial,sans-serif}
+#loading{position:fixed;inset:0;background:#f3f4f6;display:flex;align-items:center;justify-content:center;z-index:2000}
+.login-box{background:#fff;border-radius:16px;padding:30px;width:100%;max-width:350px;margin:auto;box-shadow:0 4px 20px rgba(0,0,0,.1)}
+.login-logo{text-align:center;margin-bottom:20px}
+.login-logo h1{color:#c0692b;font-size:28px}
+.fg{margin-bottom:15px}
+.flbl{font-size:11px;font-weight:600;color:#666;display:block;margin-bottom:4px}
+.fi{width:100%;padding:10px;border:1px solid #ddd;border-radius:8px}
+.btn{background:#c0692b;color:#fff;border:none;padding:10px 20px;border-radius:8px;cursor:pointer;font-weight:600;width:100%}
+.btn:hover{opacity:.9}
+#app{display:none}
+.sb{position:fixed;left:0;top:0;bottom:0;width:220px;background:#fff;border-right:1px solid #ddd;padding:20px 0}
+.sb-logo{padding:0 20px 20px;border-bottom:1px solid #eee;margin-bottom:20px}
+.sb-logo h1{color:#c0692b}
+.sb-user{padding:0 20px 15px;border-bottom:1px solid #eee;margin-bottom:15px;display:flex;align-items:center;gap:10px}
+.sb-av{width:35px;height:35px;border-radius:50%;background:#c0692b;color:#fff;display:flex;align-items:center;justify-content:center;font-weight:700}
+.ni{display:flex;align-items:center;gap:10px;padding:10px 20px;cursor:pointer;color:#374151}
+.ni:hover{background:#f5f5f5;color:#c0692b}
+.ni.active{background:rgba(192,105,43,.1);color:#c0692b;border-right:3px solid #c0692b}
+.main{margin-left:220px;min-height:100vh}
+.topbar{background:#fff;border-bottom:1px solid #ddd;padding:12px 20px;display:flex;justify-content:space-between;align-items:center}
+.page{display:none;padding:20px}
+.page.active{display:block}
+.card{background:#fff;border-radius:10px;padding:15px;box-shadow:0 1px 3px rgba(0,0,0,.1);margin-bottom:15px}
+.crow{display:grid;gap:15px;margin-bottom:15px}
+.c4{grid-template-columns:repeat(4,1fr)}
+.c2{grid-template-columns:1fr 1fr}
+.panel{background:#fff;border-radius:10px;margin-bottom:15px;overflow:hidden}
+.ph{padding:12px 15px;border-bottom:1px solid #eee;font-weight:700}
+.pb{padding:15px}
+.toast{position:fixed;bottom:20px;right:20px;background:#333;color:#fff;padding:10px 20px;border-radius:8px;z-index:3000;transform:translateX(150%);transition:transform .3s}
+.toast.show{transform:translateX(0)}
+@media(max-width:768px){.sb{transform:translateX(-100%)}.main{margin-left:0}.c4{grid-template-columns:1fr 1fr}}
+</style>
+</head>
+<body>
+<div id="loading"><h2>🍕 Pizzelato</h2><p>Carregando...</p></div>
+<div id="login-screen">
+  <div style="display:flex;align-items:center;justify-content:center;min-height:100vh">
+    <div class="login-box">
+      <div class="login-logo"><h1>PIZZELATO</h1><p>Sistema de Gestão</p></div>
+      <div id="login-err" style="color:red;margin-bottom:10px;display:none">Usuário ou senha incorretos</div>
+      <div class="fg"><label class="flbl">Usuário</label><input class="fi" id="l-user" type="text" placeholder="admin"></div>
+      <div class="fg"><label class="flbl">Senha</label><input class="fi" id="l-pass" type="password" placeholder="admin123"></div>
+      <button class="btn" onclick="doLogin()">Entrar</button>
+    </div>
+  </div>
+</div>
+<div id="app">
+<div class="sb" id="sidebar">
+  <div class="sb-logo"><h1>PIZZELATO</h1></div>
+  <div class="sb-user"><div class="sb-av" id="sb-av">A</div><div><div id="sb-uname">Admin</div><div style="font-size:11px;color:#666" id="sb-urole">admin</div></div></div>
+  <nav class="sb-nav">
+    <div class="ni active" onclick="goTo('dashboard')">📊 Dashboard</div>
+    <div class="ni" onclick="goTo('vendas')">🍕 Lançar Vendas</div>
+    <div class="ni" onclick="goTo('entregas')">🛵 Pedidos</div>
+    <div class="ni" onclick="goTo('estoque')">📦 Estoque</div>
+    <div class="ni" onclick="goTo('clientes')">👥 Clientes</div>
+    <div class="ni" onclick="goTo('financeiro')">💰 Financeiro</div>
+    <div class="ni" onclick="goTo('config')">⚙️ Configurações</div>
+  </nav>
+</div>
+<main class="main">
+<div class="topbar"><span>📋 SISTEMA DE GESTÃO</span><button onclick="logout()" style="background:none;border:none;cursor:pointer;font-size:18px">🚪 Sair</button></div>
+<div class="page active" id="page-dashboard"><div class="crow c4"><div class="card"><div style="font-size:11px;color:#666">Faturamento Hoje</div><div style="font-size:24px;font-weight:700" id="d-fat">R$ 0</div></div><div class="card"><div style="font-size:11px;color:#666">Lucro Hoje</div><div style="font-size:24px;font-weight:700" id="d-luc">R$ 0</div></div><div class="card"><div style="font-size:11px;color:#666">Pedidos Hoje</div><div style="font-size:24px;font-weight:700" id="d-ped">0</div></div><div class="card"><div style="font-size:11px;color:#666">Ticket Médio</div><div style="font-size:24px;font-weight:700" id="d-tick">R$ 0</div></div></div><div class="panel"><div class="ph">📋 Últimos Pedidos</div><div class="pb"><div id="ultimos-pedidos">Nenhum pedido registrado</div></div></div></div>
+<div class="page" id="page-vendas"><div class="panel"><div class="ph">🍕 Lançar Venda</div><div class="pb"><div class="crow c2"><div><div class="fg"><label class="flbl">Produto</label><select class="fi" id="produto" onchange="atualizarPrecoTotal()"><option value="Calabresa,22">🍕 Calabresa - R$22</option><option value="Frango Cremoso,22">🍕 Frango Cremoso - R$22</option><option value="Bacon,22">🥓 Bacon Tradicional - R$22</option><option value="Portuguesa,22">🍳 Portuguesa - R$22</option><option value="Camarao,27">🦐 Camarão Supremo - R$27</option><option value="File Mignon,27">🥩 Filé Mignon - R$27</option></select></div><div class="fg"><label class="flbl">Quantidade</label><input type="number" class="fi" id="quantidade" value="1" min="1" onchange="atualizarPrecoTotal()"></div><div class="fg"><label class="flbl">Cliente</label><input class="fi" id="cliente" placeholder="Nome do cliente"></div><div class="fg"><label class="flbl">Pagamento</label><select class="fi" id="pagamento"><option>PIX</option><option>Dinheiro</option><option>Débito</option><option>Crédito</option></select></div></div><div><div style="background:#f5f5f5;padding:15px;border-radius:8px"><div style="font-size:20px;font-weight:700" id="preco-total">R$ 22,00</div><button class="btn" style="margin-top:15px" onclick="salvarVenda()">✅ Salvar Venda</button></div></div></div></div></div></div>
+<div class="page" id="page-entregas"><div class="panel"><div class="ph">🛵 Pedidos em Aberto</div><div class="pb"><div id="pedidos-lista">Nenhum pedido pendente</div></div></div></div>
+<div class="page" id="page-estoque"><div class="panel"><div class="ph">📦 Produtos em Estoque</div><div class="pb"><div id="estoque-lista">Carregando...</div></div></div></div>
+<div class="page" id="page-clientes"><div class="panel"><div class="ph">👥 Clientes Cadastrados</div><div class="pb"><div id="clientes-lista">Carregando...</div></div></div></div>
+<div class="page" id="page-financeiro"><div class="panel"><div class="ph">💰 Resumo Financeiro</div><div class="pb"><div id="financeiro-resumo">Carregando...</div></div></div></div>
+<div class="page" id="page-config"><div class="panel"><div class="ph">⚙️ Configurações</div><div class="pb"><div class="fg"><label class="flbl">Meta Mensal (R$)</label><input type="number" class="fi" id="meta-mensal" value="6000"></div><button class="btn" onclick="salvarConfig()">Salvar</button></div></div></div>
+</main>
+</div>
+<div class="toast" id="toast"></div>
+
+<script>
+// USUÁRIOS
+const USUARIOS = [
+  { nome: "Administrador", user: "admin", pass: "admin123", role: "admin" },
+  { nome: "Nelson", user: "nelson", pass: "nelson123", role: "admin" },
+  { nome: "Caixa", user: "caixa", pass: "caixa123", role: "caixa" }
+];
+
+let usuarioAtual = null;
+let vendas = [];
+
+function carregarDados(){
+  const saved = localStorage.getItem('pizzelato_vendas');
+  if(saved) vendas = JSON.parse(saved);
+  else vendas = [];
+}
+
+function salvarDados(){
+  localStorage.setItem('pizzelato_vendas', JSON.stringify(vendas));
+}
+
+function toast(msg, tipo){
+  const t = document.getElementById('toast');
+  t.textContent = msg;
+  t.style.background = tipo === 'g' ? '#1a7a3c' : '#b52020';
+  t.classList.add('show');
+  setTimeout(() => t.classList.remove('show'), 3000);
+}
+
+function doLogin(){
+  const user = document.getElementById('l-user').value.trim();
+  const pass = document.getElementById('l-pass').value;
+  const encontrado = USUARIOS.find(u => u.user === user && u.pass === pass);
+  if(encontrado){
+    usuarioAtual = encontrado;
+    document.getElementById('login-screen').style.display = 'none';
+    document.getElementById('app').style.display = 'block';
+    document.getElementById('sb-uname').innerHTML = encontrado.nome;
+    document.getElementById('sb-av').innerHTML = encontrado.nome.charAt(0);
+    document.getElementById('sb-urole').innerHTML = encontrado.role;
+    toast(`Bem-vindo, ${encontrado.nome}!`, 'g');
+    carregarDados();
+    carregarDashboard();
+  } else {
+    document.getElementById('login-err').style.display = 'block';
+    setTimeout(() => document.getElementById('login-err').style.display = 'none', 3000);
+  }
+}
+
+function logout(){
+  usuarioAtual = null;
+  document.getElementById('app').style.display = 'none';
+  document.getElementById('login-screen').style.display = 'flex';
+  document.getElementById('l-user').value = '';
+  document.getElementById('l-pass').value = '';
+}
+
+function goTo(page){
+  document.querySelectorAll('.page').forEach(p => p.classList.remove('active'));
+  document.querySelectorAll('.ni').forEach(n => n.classList.remove('active'));
+  document.getElementById('page-'+page).classList.add('active');
+  if(event && event.target) event.target.classList.add('active');
+  if(page === 'dashboard') carregarDashboard();
+  if(page === 'entregas') carregarPedidos();
+  if(page === 'estoque') carregarEstoque();
+  if(page === 'clientes') carregarClientes();
+  if(page === 'financeiro') carregarFinanceiro();
+}
+
+function carregarDashboard(){
+  const hoje = new Date().toISOString().split('T')[0];
+  const vendasHoje = vendas.filter(v => v.data === hoje);
+  const fatHoje = vendasHoje.reduce((s,v) => s + v.total, 0);
+  const lucroHoje = fatHoje * 0.6;
+  const pedidosHoje = vendasHoje.length;
+  const ticket = pedidosHoje > 0 ? fatHoje / pedidosHoje : 0;
+  document.getElementById('d-fat').innerHTML = `R$ ${fatHoje.toFixed(2)}`;
+  document.getElementById('d-luc').innerHTML = `R$ ${lucroHoje.toFixed(2)}`;
+  document.getElementById('d-ped').innerHTML = pedidosHoje;
+  document.getElementById('d-tick').innerHTML = `R$ ${ticket.toFixed(2)}`;
+  const ultimos = [...vendas].reverse().slice(0,10);
+  const html = ultimos.length ? ultimos.map(v => `<div style="padding:8px;border-bottom:1px solid #eee">${v.data} - ${v.cliente || 'Anônimo'} - ${v.produto} x${v.qtd} - R$${v.total.toFixed(2)}</div>`).join('') : 'Nenhum pedido';
+  document.getElementById('ultimos-pedidos').innerHTML = html;
+}
+
+function atualizarPrecoTotal(){
+  const produto = document.getElementById('produto').value;
+  const partes = produto.split(',');
+  const preco = parseFloat(partes[1]);
+  const qtd = parseInt(document.getElementById('quantidade').value) || 1;
+  document.getElementById('preco-total').innerHTML = `R$ ${(preco * qtd).toFixed(2)}`;
+}
+
+function salvarVenda(){
+  const produto = document.getElementById('produto').value;
+  const partes = produto.split(',');
+  const nomeProduto = partes[0];
+  const preco = parseFloat(partes[1]);
+  const qtd = parseInt(document.getElementById('quantidade').value) || 1;
+  const cliente = document.getElementById('cliente').value || 'Anônimo';
+  const pagamento = document.getElementById('pagamento').value;
+  const novaVenda = {
+    id: Date.now(),
+    data: new Date().toISOString().split('T')[0],
+    hora: new Date().toLocaleTimeString(),
+    produto: nomeProduto,
+    preco, qtd,
+    total: preco * qtd,
+    cliente, pagamento,
+    status: 'novo',
+    usuario: usuarioAtual?.nome
+  };
+  vendas.push(novaVenda);
+  salvarDados();
+  toast('Venda salva com sucesso!', 'g');
+  document.getElementById('cliente').value = '';
+  document.getElementById('quantidade').value = '1';
+  atualizarPrecoTotal();
+  carregarDashboard();
+  carregarPedidos();
+}
+
+function carregarPedidos(){
+  const hoje = new Date().toISOString().split('T')[0];
+  const pedidosHoje = vendas.filter(v => v.data === hoje && v.status !== 'entregue');
+  const html = pedidosHoje.length ? pedidosHoje.map(v => `<div style="padding:10px;border:1px solid #ddd;margin-bottom:10px;border-radius:8px"><div><b>${v.cliente}</b> - ${v.produto} x${v.qtd}</div><div>Total: R$${v.total.toFixed(2)} - ${v.pagamento}</div><div>Status: ${v.status}</div><button class="btn" style="margin-top:8px;padding:5px 10px;font-size:12px" onclick="atualizarStatus(${v.id})">✅ Entregar</button></div>`).join('') : 'Nenhum pedido pendente hoje';
+  document.getElementById('pedidos-lista').innerHTML = html;
+}
+
+function atualizarStatus(id){
+  const index = vendas.findIndex(v => v.id === id);
+  if(index !== -1){
+    vendas[index].status = 'entregue';
+    salvarDados();
+    toast('Pedido entregue!', 'g');
+    carregarPedidos();
+    carregarDashboard();
+  }
+}
+
+function carregarEstoque(){
+  const produtos = [
+    { nome: "Calabresa", preco: 22, categoria: "Tradicional" },
+    { nome: "Frango Cremoso", preco: 22, categoria: "Tradicional" },
+    { nome: "Bacon Tradicional", preco: 22, categoria: "Tradicional" },
+    { nome: "Portuguesa", preco: 22, categoria: "Tradicional" },
+    { nome: "Camarao Supremo", preco: 27, categoria: "Premium" },
+    { nome: "Filé Mignon", preco: 27, categoria: "Premium" }
+  ];
+  const html = `<div class="crow c2">${produtos.map(p => `<div class="card"><b>${p.nome}</b><br>Preço: R$ ${p.preco.toFixed(2)}<br>Categoria: ${p.categoria}</div>`).join('')}</div>`;
+  document.getElementById('estoque-lista').innerHTML = html;
+}
+
+function carregarClientes(){
+  const clientes = [...new Set(vendas.filter(v => v.cliente !== 'Anônimo').map(v => v.cliente))];
+  const html = clientes.length ? `<div class="crow c2">${clientes.map(c => `<div class="card"><b>${c}</b><br>Pedidos: ${vendas.filter(v => v.cliente === c).length}<br>Total: R$${vendas.filter(v => v.cliente === c).reduce((s,v) => s + v.total, 0).toFixed(2)}</div>`).join('')}</div>` : 'Nenhum cliente cadastrado';
+  document.getElementById('clientes-lista').innerHTML = html;
+}
+
+function carregarFinanceiro(){
+  const mes = new Date().toISOString().slice(0,7);
+  const vendasMes = vendas.filter(v => v.data.startsWith(mes));
+  const fat = vendasMes.reduce((s,v) => s + v.total, 0);
+  const lucro = fat * 0.6;
+  const html = `<div class="crow c2"><div class="card"><b>Faturamento do Mês</b><br>R$ ${fat.toFixed(2)}</div><div class="card"><b>Lucro Estimado</b><br>R$ ${lucro.toFixed(2)}</div><div class="card"><b>Total Pedidos</b><br>${vendasMes.length}</div><div class="card"><b>Ticket Médio</b><br>R$ ${vendasMes.length ? (fat/vendasMes.length).toFixed(2) : 0}</div></div>`;
+  document.getElementById('financeiro-resumo').innerHTML = html;
+}
+
+function salvarConfig(){
+  const meta = document.getElementById('meta-mensal').value;
+  localStorage.setItem('pizzelato_meta', meta);
+  toast('Configurações salvas!', 'g');
+}
+
+// Inicialização
+carregarDados();
+setTimeout(() => {
+  document.getElementById('loading').style.display = 'none';
+}, 800);
+</script>
+</body>
+</html>
