@@ -14,7 +14,7 @@ from telegram.ext import (
 )
 
 import config
-from handlers import financeiro, cardapio, cozinha, afiliados, ai_advisor
+from handlers import financeiro, cardapio, cozinha, afiliados, ai_advisor, ai_chat
 
 # ═══════════════════════════════════════════════════════
 # CONFIGURAÇÃO DO LOGGING
@@ -308,6 +308,12 @@ def main():
     application.add_handler(CommandHandler("dica_financeira", ai_advisor.cmd_dica_financeira))
     application.add_handler(CommandHandler("gerar_foto", ai_advisor.cmd_gerar_foto))
     application.add_handler(CommandHandler("relatorio", ai_advisor.cmd_daily_report))
+
+    # ═══ AI CHAT (Claude) ═══
+    application.add_handler(CommandHandler("chat", ai_chat.cmd_chat))
+    application.add_handler(CommandHandler("analisar", ai_chat.cmd_analisar))
+    application.add_handler(CommandHandler("responder", ai_chat.cmd_responder_cliente))
+    application.add_handler(CommandHandler("gerar_campanha", ai_chat.cmd_gerar_campanha))
 
     # ═══ CONFIG ═══
     application.add_handler(CommandHandler("alertas", cmd_alertas))
