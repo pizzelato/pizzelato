@@ -14,7 +14,7 @@ from telegram.ext import (
 )
 
 import config
-from handlers import financeiro, cardapio, cozinha, afiliados
+from handlers import financeiro, cardapio, cozinha, afiliados, ai_advisor
 
 # ═══════════════════════════════════════════════════════
 # CONFIGURAÇÃO DO LOGGING
@@ -160,6 +160,23 @@ async def callback_handler(update: Update, context: ContextTypes.DEFAULT_TYPE):
         elif data == "resumo_dia":
             await financeiro.cmd_resumo(update, context)
 
+        # ═══ AI ADVISOR ═══
+
+        elif data == "ai_insights":
+            await ai_advisor.cmd_insights(update, context)
+
+        elif data == "ai_campanha":
+            await ai_advisor.cmd_campanha(update, context)
+
+        elif data == "ai_dicas":
+            await ai_advisor.cmd_dica_venda(update, context)
+
+        elif data == "ai_foto":
+            await ai_advisor.cmd_gerar_foto(update, context)
+
+        elif data == "ai_relatorio":
+            await ai_advisor.cmd_daily_report(update, context)
+
     except Exception as e:
         logger.error(f"Erro no callback: {e}")
         await query.edit_message_text(f"❌ Erro: {str(e)}")
@@ -283,6 +300,14 @@ def main():
     application.add_handler(CommandHandler("comissoes", afiliados.cmd_comissoes))
     application.add_handler(CommandHandler("novo_afiliado", afiliados.cmd_novo_afiliado))
     application.add_handler(CommandHandler("afiliado", afiliados.cmd_afiliado_detalhe))
+
+    # ═══ AI ADVISOR ═══
+    application.add_handler(CommandHandler("insights", ai_advisor.cmd_insights))
+    application.add_handler(CommandHandler("campanha", ai_advisor.cmd_campanha))
+    application.add_handler(CommandHandler("dica_venda", ai_advisor.cmd_dica_venda))
+    application.add_handler(CommandHandler("dica_financeira", ai_advisor.cmd_dica_financeira))
+    application.add_handler(CommandHandler("gerar_foto", ai_advisor.cmd_gerar_foto))
+    application.add_handler(CommandHandler("relatorio", ai_advisor.cmd_daily_report))
 
     # ═══ CONFIG ═══
     application.add_handler(CommandHandler("alertas", cmd_alertas))

@@ -25,9 +25,9 @@ async def cmd_start(update: Update, context: ContextTypes.DEFAULT_TYPE):
     bienvenida = f"""
 🍕 *Bem-vindo ao Pizzelato Gestor!*
 
-Olá, {user.first_name}! Sou seu assistente financeiro da *Pizzelato Pizza Cone*.
+Olá, {user.first_name}! Sou seu *Gerente AI* da *Pizzelato Pizza Cone*.
 
-📋 *O que posso fazer por você:*
+🤖 *Sou seu empresário virtual!*
 
 💰 *Financeiro*
 ├ /caixa - Ver saldo do caixa
@@ -35,10 +35,17 @@ Olá, {user.first_name}! Sou seu assistente financeiro da *Pizzelato Pizza Cone*
 ├ /despesas - Suas despesas
 ├ /dre - Demonstrativo de resultados
 
-📊 *Análises*
-├ /resumo - Resumo completo do dia
+📊 *Análises & AI*
+├ /insights - Análise completa com IA
+├ /campanha - Sugestões de campanhas
+├ /relatorio - Relatório diário
 ├ /meta - Ver progresso da meta
 ├ /semana - Resumo semanal
+
+💡 *Dicas & Fotos*
+├ /dica_venda - Dicas para vender mais
+├ /dica_financeira - Dicas financeiras
+├ /gerar_foto - Criar imagem promocional
 
 🍕 *Operação*
 ├ /cardapio - Ver cardápio
@@ -49,14 +56,14 @@ Olá, {user.first_name}! Sou seu assistente financeiro da *Pizzelato Pizza Cone*
 ├ /afiliados - Lista de afiliados
 ├ /comissoes - Suas comissões
 
-🔧 *Config*
-├ /alertas - Configurar alertas
-├ /ajuda - Ver todos os comandos
-
 _Use os botões abaixo para navegação rápida:_
 """
 
     keyboard = [
+        [
+            InlineKeyboardButton("🤖 AI Advisor", callback_data="ai_insights"),
+            InlineKeyboardButton("🎯 Campanhas", callback_data="ai_campanha"),
+        ],
         [
             InlineKeyboardButton("💰 Caixa", callback_data="fin_caixa"),
             InlineKeyboardButton("📊 Vendas", callback_data="fin_vendas"),
