@@ -1,0 +1,6 @@
+[build]
+builder = "python"
+
+[deploy]
+root = ""
+command = "python bot.py"

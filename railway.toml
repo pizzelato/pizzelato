@@ -1,0 +1,6 @@
+[build]
+builder = "python"
+
+[deploy]
+root = "telegram-bot"
+command = "python bot.py"
