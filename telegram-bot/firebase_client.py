@@ -30,7 +30,7 @@ def init_firebase():
             cred = credentials.ApplicationDefault()
 
         firebase_admin.initialize_app(cred, {
-            'projectId': 'pizzelato-gestao',  # Substitua pelo seu project ID
+            'projectId': 'pizzelato-98e7c',
         })
 
         db = firestore.client()
