@@ -1,0 +1,15 @@
+# Pizzelato Telegram Bot - Gestor Financeiro
+# Token do Bot: 8586185192:AAEN2tR4lHNXpZJEqbqLnCZAd8D-huwsrxY
+
+# Dependências
+python-telegram-bot==20.7
+firebase-admin==6.3.0
+python-dateutil==2.8.2
+
+# Variáveis de ambiente (configure no Railway/Render/etc)
+# TELEGRAM_BOT_TOKEN=8586185192:AAEN2tR4lHNXpZJEqbqLnCZAd8D-huwsrxY
+# FIREBASE_CREDENTIALS_PATH=firebase-credentials.json
+
+# Ou cole o conteúdo JSON das credenciais do Firebase
+# GOOGLE_APPLICATION_CREDENTIALS_JSON={"type":"service_account",...}
+

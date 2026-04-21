@@ -1,0 +1,12 @@
+"""
+Pizzelato Telegram Bot
+Configurações para deploy no Railway
+"""
+import os
+
+# Railway vai configurar estas variáveis automaticamente
+# Vá em Variables no Railway e adicione:
+TELEGRAM_BOT_TOKEN = os.environ.get('TELEGRAM_BOT_TOKEN', '8586185192:AAEN2tR4lHNXpZJEqbqLnCZAd8D-huwsrxY')
+
+# Credenciais Firebase (cole o JSON como variável de ambiente)
+FIREBASE_CREDENTIALS_JSON = os.environ.get('FIREBASE_CREDENTIALS_JSON', '{}')
