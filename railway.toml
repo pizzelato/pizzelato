@@ -1,6 +1,5 @@
 [build]
-builder = "python"
+builder = "nixpacks"
 
 [deploy]
-root = "telegram-bot"
-command = "python bot.py"
+startCommand = "python bot.py"
